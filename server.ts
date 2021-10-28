@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express'
 import cors from 'cors'
 
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 3000
 
 class App {
   public application: express.Application
