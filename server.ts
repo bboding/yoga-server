@@ -41,12 +41,12 @@ app.get('/', (req: Request, res: Response) => {
 
 
 app.get('/poses', (req: Request, res: Response) => {
+
   client.query('select * from poses where visible = true order by ordering desc', (error: any, results: { rows: any }) => {
     if (error) throw error
 
     res.json(results.rows)
   })
-
 })
 
 app.get('/poses/:id', (req: Request, res: Response) => {
@@ -56,5 +56,52 @@ app.get('/poses/:id', (req: Request, res: Response) => {
     res.json(results.rows)
   })
 })
+
+app.get('/quiz/poses', (req: Request, res: Response) => {
+  let poses: any = []
+  let randomNumberArray: number[] = []
+  let quizzes: any = []
+
+  client.query('select * from poses where visible = true order by ordering desc', (error: any, results: { rows: any }) => {
+    if (error) {
+      throw error
+    } else {
+      poses = results.rows
+      while (true) {
+        const randomNumber = Math.floor(Math.random() * poses.length);
+
+        if (!randomNumberArray.includes(randomNumber)) {
+          let quiz = poses[randomNumber]
+          quiz.questionList = [quiz.korean]
+          quiz.picked = ''
+
+          while (true) {
+            const otherRandomNumber = Math.floor(Math.random() * poses.length)
+            if (!quiz.questionList.includes(poses[otherRandomNumber].korean)) {
+              const isPush = Math.random() < 0.5
+              if (isPush) {
+                quiz.questionList.push(poses[otherRandomNumber].korean)
+              } else {
+                quiz.questionList.unshift(poses[otherRandomNumber].korean)
+              }
+              if (quiz.questionList.length === 3) break
+            }
+          }
+
+          quizzes.push(quiz)
+        }
+        randomNumberArray.push(randomNumber)
+
+        if (quizzes.length === 10) break;
+      }
+      res.send(quizzes)
+
+    }
+
+  })
+
+
+})
+
 
 app.listen(PORT, () => console.log(`Example app listening at http://localhost:${PORT}`))
